@@ -1056,10 +1056,6 @@
                         
                         <form id="submitForm">
                             <div class="input-group">
-                                <label for="nickname">Your Name (optional)</label>
-                                <input type="text" id="nickname" placeholder="Anonymous" maxlength="20">
-                            </div>
-                            <div class="input-group">
                                 <label for="response">Your Response</label>
                                 <input type="text" id="response" placeholder="Enter 1-3 words" required maxlength="50">
                             </div>
@@ -1068,6 +1064,12 @@
                                 ✅ Response submitted successfully!
                             </div>
                         </form>
+                        
+                        <div style="margin-top: 20px; text-align: center;">
+                            <a href="/view/${sessionCode}" style="color: var(--uq-purple); text-decoration: underline;">
+                                View Word Cloud →
+                            </a>
+                        </div>
                     </div>
                 </div>
             `;
@@ -1076,7 +1078,6 @@
             document.getElementById('submitForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 
-                const nickname = document.getElementById('nickname').value || 'Anonymous';
                 const response = document.getElementById('response').value.trim();
                 
                 // Basic validation
@@ -1096,7 +1097,7 @@
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ 
-                            nickname, 
+                            nickname: 'Student', 
                             response,
                             sessionCode 
                         })
@@ -1129,15 +1130,49 @@
             }, 100);
         }
 
+        // Render student view page (read-only word cloud)
+        function renderStudentView(sessionCode) {
+            currentSessionCode = sessionCode;
+            
+            app.innerHTML = `
+                <div class="student-view-page" style="min-height: 100vh; padding: 20px;">
+                    <div class="container">
+                        <div style="text-align: center; margin-bottom: 30px;">
+                            <h1 style="color: var(--uq-purple); margin-bottom: 10px;">Live Word Cloud</h1>
+                            <div class="room-badge" style="display: inline-block; background: var(--uq-purple); color: white; padding: 8px 20px; border-radius: 20px; font-weight: 600;">
+                                Room: ${sessionCode}
+                            </div>
+                        </div>
+                        
+                        <div class="word-cloud-container">
+                            <div id="wordCloud"></div>
+                        </div>
+                        
+                        <div style="text-align: center; margin-top: 30px;">
+                            <a href="/submit/${sessionCode}" style="display: inline-block; padding: 12px 24px; background: var(--uq-purple); color: white; text-decoration: none; border-radius: 8px; font-weight: 600;">
+                                ← Submit Another Response
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Start polling for updates
+            fetchSessionData(true); // true = student view (no stats)
+            updateInterval = setInterval(() => fetchSessionData(true), 3000);
+        }
+
         // Fetch session data
-        async function fetchSessionData() {
+        async function fetchSessionData(isStudentView = false) {
             if (!currentSessionCode) return;
             
             try {
                 const res = await fetch(`${API_BASE}/api/responses?session=${currentSessionCode}`);
                 const data = await res.json();
                 
-                updateStats(data);
+                if (!isStudentView) {
+                    updateStats(data);
+                }
                 updateWordCloud(data.responses);
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -1158,13 +1193,19 @@
             const wordCounts = {};
             const blockedWords = getBlockedWords();
             
+            // Convert blocked words to lowercase for comparison
+            const blockedWordsLower = blockedWords.map(w => w.toLowerCase());
+            
             // Count word frequencies
             responses.forEach(item => {
                 const words = item.response.toLowerCase().split(/\s+/);
                 words.forEach(word => {
+                    // Clean the word (remove punctuation)
+                    const cleanWord = word.replace(/[^\w\s]/g, '').trim();
+                    
                     // Filter out blocked words
-                    if (!blockedWords.includes(word.toLowerCase())) {
-                        wordCounts[word] = (wordCounts[word] || 0) + 1;
+                    if (cleanWord && !blockedWordsLower.includes(cleanWord)) {
+                        wordCounts[cleanWord] = (wordCounts[cleanWord] || 0) + 1;
                     }
                 });
             });
@@ -1395,6 +1436,9 @@
         } else if (path.startsWith('/submit/')) {
             const sessionCode = path.split('/')[2];
             renderStudentSubmit(sessionCode);
+        } else if (path.startsWith('/view/')) {
+            const sessionCode = path.split('/')[2];
+            renderStudentView(sessionCode);
         } else {
             // Default to teacher landing
             window.location.href = '/';

@@ -61,6 +61,10 @@ app.get('/submit/:code', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+app.get('/view/:code', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 // API endpoint to create a new session
 app.post('/api/create-session', (req, res) => {
     const code = generateRoomCode();
