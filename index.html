@@ -1,0 +1,1411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UQ Word Cloud - Interactive Classroom Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* UQ Brand Colors */
+            --uq-purple: #51247A;
+            --uq-purple-light: #7B4397;
+            --uq-purple-dark: #3D1C5C;
+            --uq-gold: #FBB800;
+            --uq-gold-light: #FDD023;
+            --uq-grey: #D7D1CC;
+            --uq-grey-light: #F3F3F3;
+            --uq-grey-dark: #595959;
+            --uq-white: #FFFFFF;
+            --uq-black: #2B2B2B;
+            
+            /* Pastel palette for word cloud */
+            --pastel-1: #FFB3D9;
+            --pastel-2: #B3E5FC;
+            --pastel-3: #DCEDC8;
+            --pastel-4: #FFE0B2;
+            --pastel-5: #E1BEE7;
+            --pastel-6: #FFCDD2;
+            --pastel-7: #C5E1A5;
+            --pastel-8: #F8BBD0;
+            --pastel-9: #B2DFDB;
+            --pastel-10: #FFF9C4;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--uq-grey-light);
+            color: var(--uq-black);
+            transition: background 0.3s, color 0.3s;
+        }
+
+        body.dark {
+            background: var(--uq-black);
+            color: var(--uq-grey-light);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Teacher Landing Page */
+        .teacher-landing {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .landing-content {
+            text-align: center;
+            background: white;
+            padding: 60px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(81, 36, 122, 0.1);
+            max-width: 600px;
+            width: 100%;
+        }
+
+        body.dark .landing-content {
+            background: var(--uq-grey-dark);
+            box-shadow: 0 10px 40px rgba(251, 184, 0, 0.1);
+        }
+
+        .landing-content h1 {
+            color: var(--uq-purple);
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+
+        body.dark .landing-content h1 {
+            color: var(--uq-gold);
+        }
+
+        .landing-content p {
+            color: var(--uq-grey-dark);
+            font-size: 1.2em;
+            margin-bottom: 40px;
+        }
+
+        body.dark .landing-content p {
+            color: var(--uq-grey);
+        }
+
+        .create-session-btn {
+            background: var(--uq-purple);
+            color: white;
+            padding: 20px 40px;
+            font-size: 1.3em;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .create-session-btn:hover {
+            background: var(--uq-purple-dark);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(81, 36, 122, 0.3);
+        }
+
+        .my-sessions {
+            margin-top: 60px;
+            text-align: left;
+        }
+
+        .my-sessions h2 {
+            color: var(--uq-purple);
+            margin-bottom: 20px;
+        }
+
+        body.dark .my-sessions h2 {
+            color: var(--uq-gold);
+        }
+
+        .session-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .session-item {
+            background: var(--uq-grey-light);
+            padding: 15px 20px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        body.dark .session-item {
+            background: var(--uq-black);
+        }
+
+        .session-item:hover {
+            transform: translateX(5px);
+        }
+
+        .session-code {
+            font-weight: 600;
+            color: var(--uq-purple);
+            font-size: 1.1em;
+        }
+
+        body.dark .session-code {
+            color: var(--uq-gold);
+        }
+
+        .session-stats {
+            color: var(--uq-grey-dark);
+            font-size: 0.9em;
+        }
+
+        .view-session-btn {
+            background: var(--uq-purple);
+            color: white;
+            padding: 8px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .view-session-btn:hover {
+            background: var(--uq-purple-dark);
+        }
+
+        /* Student Join Page */
+        .student-join {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--uq-purple) 0%, var(--uq-purple-light) 100%);
+        }
+
+        .join-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .join-content h1 {
+            color: var(--uq-purple);
+            margin-bottom: 10px;
+        }
+
+        .join-content p {
+            color: var(--uq-grey-dark);
+            margin-bottom: 30px;
+        }
+
+        .code-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.4em;
+            text-align: center;
+            border: 3px solid var(--uq-grey);
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .code-input:focus {
+            outline: none;
+            border-color: var(--uq-purple);
+        }
+
+        .join-btn {
+            width: 100%;
+            padding: 15px;
+            background: var(--uq-purple);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .join-btn:hover {
+            background: var(--uq-purple-dark);
+            transform: translateY(-2px);
+        }
+
+        .join-btn:disabled {
+            background: var(--uq-grey);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            margin-top: 10px;
+            display: none;
+        }
+
+        /* Teacher Dashboard */
+        .teacher-dashboard {
+            min-height: 100vh;
+        }
+
+        .dashboard-header {
+            background: var(--uq-purple);
+            color: white;
+            padding: 20px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        body.dark .dashboard-header {
+            background: var(--uq-black);
+            border-bottom: 3px solid var(--uq-gold);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .session-info {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .session-info h1 {
+            font-size: 1.8em;
+        }
+
+        .room-code-display {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px 25px;
+            border-radius: 30px;
+            font-size: 1.4em;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .control-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .clear-btn {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .clear-btn:hover {
+            background: #c0392b;
+        }
+
+        .theme-toggle {
+            background: var(--uq-gold);
+            color: var(--uq-black);
+        }
+
+        .theme-toggle:hover {
+            background: var(--uq-gold-light);
+        }
+
+        .fullscreen-btn {
+            background: var(--uq-purple-light);
+            color: white;
+        }
+
+        .fullscreen-btn:hover {
+            background: var(--uq-purple-dark);
+        }
+
+        /* QR Code Section */
+        .qr-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(81, 36, 122, 0.1);
+            text-align: center;
+        }
+
+        body.dark .qr-section {
+            background: var(--uq-grey-dark);
+            box-shadow: 0 4px 20px rgba(251, 184, 0, 0.1);
+        }
+
+        .qr-section h2 {
+            color: var(--uq-purple);
+            margin-bottom: 20px;
+        }
+
+        body.dark .qr-section h2 {
+            color: var(--uq-gold);
+        }
+
+        #qrcode {
+            margin: 20px auto;
+        }
+
+        .share-instructions {
+            background: var(--uq-grey-light);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        body.dark .share-instructions {
+            background: var(--uq-black);
+        }
+
+        .share-instructions p {
+            margin: 10px 0;
+            line-height: 1.6;
+        }
+
+        .share-url {
+            background: white;
+            padding: 10px;
+            border-radius: 6px;
+            font-family: monospace;
+            margin: 10px 0;
+            word-break: break-all;
+        }
+
+        body.dark .share-url {
+            background: var(--uq-grey-dark);
+        }
+
+        /* Word Cloud Container */
+        .word-cloud-container {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(81, 36, 122, 0.1);
+            min-height: 500px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        body.dark .word-cloud-container {
+            background: var(--uq-grey-dark);
+            box-shadow: 0 4px 20px rgba(251, 184, 0, 0.1);
+        }
+
+        #wordCloud {
+            width: 100%;
+            height: 500px;
+        }
+
+        /* Student Submit Page */
+        .student-submit {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .submit-container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(81, 36, 122, 0.1);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        body.dark .submit-container {
+            background: var(--uq-grey-dark);
+            box-shadow: 0 10px 40px rgba(251, 184, 0, 0.1);
+        }
+
+        .room-badge {
+            background: var(--uq-purple);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        body.dark .room-badge {
+            background: var(--uq-gold);
+            color: var(--uq-black);
+        }
+
+        .submit-container h1 {
+            color: var(--uq-purple);
+            margin-bottom: 10px;
+        }
+
+        body.dark .submit-container h1 {
+            color: var(--uq-gold);
+        }
+
+        .submit-container p {
+            color: var(--uq-grey-dark);
+            margin-bottom: 30px;
+        }
+
+        body.dark .submit-container p {
+            color: var(--uq-grey);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--uq-purple);
+        }
+
+        body.dark .input-group label {
+            color: var(--uq-gold);
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--uq-grey);
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        body.dark .input-group input {
+            background: var(--uq-black);
+            border-color: var(--uq-grey-dark);
+            color: var(--uq-grey-light);
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--uq-purple);
+        }
+
+        body.dark .input-group input:focus {
+            border-color: var(--uq-gold);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--uq-purple);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .submit-btn:hover {
+            background: var(--uq-purple-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(81, 36, 122, 0.3);
+        }
+
+        .submit-btn:disabled {
+            background: var(--uq-grey);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .success-message {
+            margin-top: 20px;
+            padding: 15px;
+            background: var(--uq-gold);
+            color: var(--uq-black);
+            border-radius: 8px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .success-message.show {
+            opacity: 1;
+        }
+
+        /* Stats */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(81, 36, 122, 0.1);
+            text-align: center;
+            border-top: 4px solid var(--uq-purple);
+        }
+
+        body.dark .stat-card {
+            background: var(--uq-grey-dark);
+            box-shadow: 0 2px 10px rgba(251, 184, 0, 0.1);
+            border-top-color: var(--uq-gold);
+        }
+
+        .stat-card h3 {
+            color: var(--uq-grey-dark);
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        body.dark .stat-card h3 {
+            color: var(--uq-grey);
+        }
+
+        .stat-card .value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: var(--uq-purple);
+        }
+
+        body.dark .stat-card .value {
+            color: var(--uq-gold);
+        }
+
+        /* Filter Section */
+        .filter-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(81, 36, 122, 0.1);
+        }
+
+        body.dark .filter-section {
+            background: var(--uq-grey-dark);
+            box-shadow: 0 2px 10px rgba(251, 184, 0, 0.1);
+        }
+
+        .filter-section h3 {
+            margin-bottom: 15px;
+            color: var(--uq-purple);
+        }
+
+        body.dark .filter-section h3 {
+            color: var(--uq-gold);
+        }
+
+        .filter-input {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .filter-input input {
+            flex: 1;
+            padding: 8px;
+            border: 2px solid var(--uq-grey);
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        body.dark .filter-input input {
+            background: var(--uq-black);
+            border-color: var(--uq-grey-dark);
+            color: var(--uq-grey-light);
+        }
+
+        .filter-input button {
+            padding: 8px 16px;
+            background: var(--uq-purple);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .filter-input button:hover {
+            background: var(--uq-purple-dark);
+        }
+
+        .blocked-words {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .blocked-word {
+            background: #e74c3c;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .blocked-word .remove {
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: var(--uq-grey-dark);
+        }
+
+        body.dark .empty-state {
+            color: var(--uq-grey);
+        }
+
+        .empty-state h2 {
+            font-size: 2em;
+            margin-bottom: 10px;
+            color: var(--uq-purple);
+        }
+
+        body.dark .empty-state h2 {
+            color: var(--uq-gold);
+        }
+
+        /* Fullscreen styles */
+        .fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--uq-grey-light);
+            z-index: 1000;
+            padding: 20px;
+            overflow: auto;
+        }
+
+        body.dark .fullscreen {
+            background: var(--uq-black);
+        }
+
+        .fullscreen .word-cloud-container {
+            height: calc(100vh - 40px);
+            max-width: 100%;
+        }
+
+        .fullscreen #wordCloud {
+            height: 100%;
+        }
+
+        .exit-fullscreen {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            z-index: 1001;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .landing-content {
+                padding: 40px 20px;
+            }
+
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .session-info {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .controls {
+                justify-content: center;
+            }
+
+            .qr-section {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-cloud/1.2.5/d3.layout.cloud.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    
+    <script>
+        // Check if dark mode preference exists
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark');
+        }
+
+        // Simple router
+        const app = document.getElementById('app');
+        const path = window.location.pathname;
+
+        // API endpoints
+        const API_BASE = window.location.origin;
+
+        // Default profanity list
+        const defaultProfanityList = [
+            'damn', 'hell', 'shit', 'fuck', 'ass', 'bitch', 'bastard', 'dick', 'cock', 'pussy',
+            'cunt', 'fag', 'slut', 'whore', 'piss', 'crap', 'douche', 'jerk', 'idiot', 'stupid'
+        ];
+
+        // Pastel colors for word cloud
+        const pastelColors = [
+            '#FFB3D9', '#B3E5FC', '#DCEDC8', '#FFE0B2', '#E1BEE7',
+            '#FFCDD2', '#C5E1A5', '#F8BBD0', '#B2DFDB', '#FFF9C4'
+        ];
+
+        // Store previous word data for smooth updates
+        let previousWords = new Map();
+        let currentSessionCode = null;
+        let updateInterval = null;
+
+        // Get active sessions from localStorage
+        function getActiveSessions() {
+            return JSON.parse(localStorage.getItem('activeSessions') || '[]');
+        }
+
+        // Save active sessions to localStorage
+        function saveActiveSessions(sessions) {
+            localStorage.setItem('activeSessions', JSON.stringify(sessions));
+        }
+
+        // Add session to active list
+        function addActiveSession(code) {
+            const sessions = getActiveSessions();
+            if (!sessions.find(s => s.code === code)) {
+                sessions.push({ code, createdAt: new Date() });
+                saveActiveSessions(sessions);
+            }
+        }
+
+        // Render teacher landing page
+        function renderTeacherLanding() {
+            const sessions = getActiveSessions();
+            
+            app.innerHTML = `
+                <div class="teacher-landing">
+                    <div class="landing-content">
+                        <h1>📊 UQ Word Cloud</h1>
+                        <p>Create interactive word clouds for your classroom</p>
+                        <button class="create-session-btn" onclick="createNewSession()">
+                            Create New Session
+                        </button>
+                        
+                        ${sessions.length > 0 ? `
+                            <div class="my-sessions">
+                                <h2>My Active Sessions</h2>
+                                <div class="session-list">
+                                    ${sessions.map(session => `
+                                        <div class="session-item">
+                                            <div>
+                                                <div class="session-code">${session.code}</div>
+                                                <div class="session-stats">Created ${new Date(session.createdAt).toLocaleString()}</div>
+                                            </div>
+                                            <button class="view-session-btn" onclick="viewSession('${session.code}')">
+                                                View Session
+                                            </button>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Create new session
+        async function createNewSession() {
+            try {
+                const response = await fetch(`${API_BASE}/api/create-session`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (data.code) {
+                    addActiveSession(data.code);
+                    window.location.href = `/teacher/${data.code}`;
+                }
+            } catch (error) {
+                alert('Error creating session. Please try again.');
+            }
+        }
+
+        // View existing session
+        function viewSession(code) {
+            window.location.href = `/teacher/${code}`;
+        }
+
+        // Render teacher dashboard
+        function renderTeacherDashboard(sessionCode) {
+            currentSessionCode = sessionCode;
+            
+            app.innerHTML = `
+                <div class="teacher-dashboard">
+                    <div class="dashboard-header">
+                        <div class="header-content">
+                            <div class="session-info">
+                                <h1>Word Cloud Session</h1>
+                                <div class="room-code-display">${sessionCode}</div>
+                            </div>
+                            <div class="controls">
+                                <button class="control-btn back-btn" onclick="goBack()">← Back</button>
+                                <button class="control-btn clear-btn" onclick="clearSession()">🗑️ Clear</button>
+                                <button class="control-btn theme-toggle" onclick="toggleTheme()">🌓 Theme</button>
+                                <button class="control-btn fullscreen-btn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="container">
+                        <div class="qr-section">
+                            <h2>Students: Scan & Join</h2>
+                            <div id="qrcode"></div>
+                            <div class="share-instructions">
+                                <p><strong>Instructions for students:</strong></p>
+                                <p>1. Scan the QR code or visit:</p>
+                                <div class="share-url">${window.location.origin}/join</div>
+                                <p>2. Enter room code: <strong>${sessionCode}</strong></p>
+                                <p>3. Submit your response!</p>
+                            </div>
+                        </div>
+                        
+                        <div class="word-cloud-container" id="cloudContainer">
+                            <div id="wordCloud"></div>
+                        </div>
+                        
+                        <div class="stats">
+                            <div class="stat-card">
+                                <h3>Total Responses</h3>
+                                <div class="value" id="totalResponses">0</div>
+                            </div>
+                            <div class="stat-card">
+                                <h3>Unique Words</h3>
+                                <div class="value" id="uniqueWords">0</div>
+                            </div>
+                            <div class="stat-card">
+                                <h3>Active Students</h3>
+                                <div class="value" id="activeStudents">0</div>
+                            </div>
+                        </div>
+                        
+                        <div class="filter-section">
+                            <h3>Word Filter</h3>
+                            <div class="filter-input">
+                                <input type="text" id="filterWord" placeholder="Add word to block...">
+                                <button onclick="addBlockedWord()">Add</button>
+                            </div>
+                            <div class="blocked-words" id="blockedWords"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Generate QR code
+            new QRCode(document.getElementById("qrcode"), {
+                text: `${window.location.origin}/join`,
+                width: 200,
+                height: 200,
+                colorDark: "#51247A",
+                colorLight: "#FFFFFF",
+            });
+
+            // Initialize blocked words
+            updateBlockedWordsDisplay();
+
+            // Start polling for updates
+            fetchSessionData();
+            updateInterval = setInterval(fetchSessionData, 3000);
+        }
+
+        // Render student join page
+        function renderStudentJoin() {
+            app.innerHTML = `
+                <div class="student-join">
+                    <div class="join-content">
+                        <h1>Join Session</h1>
+                        <p>Enter the room code from your teacher</p>
+                        <input type="text" 
+                               class="code-input" 
+                               id="roomCode" 
+                               placeholder="e.g. PURPLE-KOALA"
+                               autocomplete="off"
+                               spellcheck="false">
+                        <button class="join-btn" id="joinBtn" onclick="joinSession()">
+                            Join Session
+                        </button>
+                        <div class="error-message" id="errorMsg">
+                            Invalid room code. Please try again.
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Focus on input
+            setTimeout(() => {
+                document.getElementById('roomCode').focus();
+            }, 100);
+
+            // Enter key support
+            document.getElementById('roomCode').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    joinSession();
+                }
+            });
+        }
+
+        // Join session
+        async function joinSession() {
+            const roomCode = document.getElementById('roomCode').value.trim().toUpperCase();
+            const joinBtn = document.getElementById('joinBtn');
+            const errorMsg = document.getElementById('errorMsg');
+            
+            if (!roomCode) return;
+            
+            joinBtn.disabled = true;
+            errorMsg.style.display = 'none';
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/session/${roomCode}`);
+                const data = await response.json();
+                
+                if (data.exists) {
+                    // Store session code and redirect
+                    sessionStorage.setItem('currentSession', roomCode);
+                    window.location.href = `/submit/${roomCode}`;
+                } else {
+                    errorMsg.style.display = 'block';
+                    joinBtn.disabled = false;
+                }
+            } catch (error) {
+                errorMsg.style.display = 'block';
+                joinBtn.disabled = false;
+            }
+        }
+
+        // Render student submit page
+        function renderStudentSubmit(sessionCode) {
+            app.innerHTML = `
+                <div class="student-submit">
+                    <div class="submit-container">
+                        <div class="room-badge">Room: ${sessionCode}</div>
+                        <h1>Share Your Thoughts! 💭</h1>
+                        <p>Enter 1-3 words below</p>
+                        
+                        <form id="submitForm">
+                            <div class="input-group">
+                                <label for="nickname">Your Name (optional)</label>
+                                <input type="text" id="nickname" placeholder="Anonymous" maxlength="20">
+                            </div>
+                            <div class="input-group">
+                                <label for="response">Your Response</label>
+                                <input type="text" id="response" placeholder="Enter 1-3 words" required maxlength="50">
+                            </div>
+                            <button type="submit" class="submit-btn" id="submitBtn">Submit</button>
+                            <div class="success-message" id="successMsg">
+                                ✅ Response submitted successfully!
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            `;
+
+            // Handle form submission
+            document.getElementById('submitForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const nickname = document.getElementById('nickname').value || 'Anonymous';
+                const response = document.getElementById('response').value.trim();
+                
+                // Basic validation
+                if (!response) return;
+                
+                const words = response.split(/\s+/);
+                if (words.length > 3) {
+                    alert('Please enter only 1-3 words');
+                    return;
+                }
+
+                const submitBtn = document.getElementById('submitBtn');
+                submitBtn.disabled = true;
+
+                try {
+                    const res = await fetch(`${API_BASE}/api/submit`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            nickname, 
+                            response,
+                            sessionCode 
+                        })
+                    });
+
+                    if (res.ok) {
+                        // Show success message
+                        const successMsg = document.getElementById('successMsg');
+                        successMsg.classList.add('show');
+                        
+                        // Clear form
+                        document.getElementById('response').value = '';
+                        
+                        // Reset after delay
+                        setTimeout(() => {
+                            successMsg.classList.remove('show');
+                            submitBtn.disabled = false;
+                            document.getElementById('response').focus();
+                        }, 3000);
+                    }
+                } catch (error) {
+                    alert('Error submitting response. Please try again.');
+                    submitBtn.disabled = false;
+                }
+            });
+
+            // Focus on response input
+            setTimeout(() => {
+                document.getElementById('response').focus();
+            }, 100);
+        }
+
+        // Fetch session data
+        async function fetchSessionData() {
+            if (!currentSessionCode) return;
+            
+            try {
+                const res = await fetch(`${API_BASE}/api/responses?session=${currentSessionCode}`);
+                const data = await res.json();
+                
+                updateStats(data);
+                updateWordCloud(data.responses);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
+
+        // Update statistics
+        function updateStats(data) {
+            if (document.getElementById('totalResponses')) {
+                document.getElementById('totalResponses').textContent = data.totalResponses;
+                document.getElementById('uniqueWords').textContent = data.uniqueWords;
+                document.getElementById('activeStudents').textContent = data.activeStudents;
+            }
+        }
+
+        // Update word cloud with smooth transitions
+        function updateWordCloud(responses) {
+            const wordCounts = {};
+            const blockedWords = getBlockedWords();
+            
+            // Count word frequencies
+            responses.forEach(item => {
+                const words = item.response.toLowerCase().split(/\s+/);
+                words.forEach(word => {
+                    // Filter out blocked words
+                    if (!blockedWords.includes(word.toLowerCase())) {
+                        wordCounts[word] = (wordCounts[word] || 0) + 1;
+                    }
+                });
+            });
+
+            // Convert to array for D3
+            const words = Object.entries(wordCounts).map(([text, count]) => ({
+                text,
+                size: Math.pow(count, 1.5) * 20 + 20, // Enhanced scaling
+                count
+            }));
+
+            // Check if we need to update
+            const currentWordMap = new Map(words.map(w => [w.text, w.count]));
+            let needsUpdate = false;
+
+            if (previousWords.size !== currentWordMap.size) {
+                needsUpdate = true;
+            } else {
+                for (let [word, count] of currentWordMap) {
+                    if (previousWords.get(word) !== count) {
+                        needsUpdate = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!needsUpdate && previousWords.size > 0) {
+                return; // No changes, skip update
+            }
+
+            previousWords = currentWordMap;
+
+            // Clear existing cloud
+            const container = d3.select('#wordCloud');
+            
+            if (words.length === 0) {
+                container.selectAll('*').remove();
+                container
+                    .append('div')
+                    .attr('class', 'empty-state')
+                    .html(`<h2>Waiting for responses...</h2><p>Room Code: <strong>${currentSessionCode}</strong></p>`);
+                return;
+            }
+
+            // Set up dimensions
+            const containerNode = document.getElementById('wordCloud');
+            const width = containerNode.offsetWidth;
+            const height = containerNode.offsetHeight;
+
+            // Create cloud layout
+            const layout = d3.layout.cloud()
+                .size([width, height])
+                .words(words)
+                .padding(5)
+                .rotate(() => (Math.random() - 0.5) * 30)
+                .font('Arial, sans-serif')
+                .fontSize(d => d.size)
+                .on('end', draw);
+
+            layout.start();
+
+            function draw(words) {
+                // Select or create SVG
+                let svg = container.select('svg');
+                if (svg.empty()) {
+                    svg = container.append('svg');
+                }
+                
+                svg
+                    .attr('width', width)
+                    .attr('height', height);
+
+                let g = svg.select('g');
+                if (g.empty()) {
+                    g = svg.append('g');
+                }
+                
+                g.attr('transform', `translate(${width/2},${height/2})`);
+
+                // Bind data
+                const text = g.selectAll('text')
+                    .data(words, d => d.text);
+
+                // Exit
+                text.exit()
+                    .transition()
+                    .duration(300)
+                    .style('opacity', 0)
+                    .remove();
+
+                // Enter + Update
+                const textEnter = text.enter()
+                    .append('text')
+                    .style('font-family', 'Arial, sans-serif')
+                    .style('font-weight', 'bold')
+                    .attr('text-anchor', 'middle')
+                    .style('opacity', 0);
+
+                text.merge(textEnter)
+                    .transition()
+                    .duration(600)
+                    .style('font-size', d => d.size + 'px')
+                    .style('fill', (d, i) => pastelColors[i % pastelColors.length])
+                    .attr('transform', d => `translate(${d.x},${d.y})rotate(${d.rotate})`)
+                    .style('opacity', 1)
+                    .text(d => d.text);
+            }
+        }
+
+        // Clear session
+        async function clearSession() {
+            if (confirm('Are you sure you want to clear all responses?')) {
+                try {
+                    await fetch(`${API_BASE}/api/clear`, { 
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ sessionCode: currentSessionCode })
+                    });
+                    previousWords.clear();
+                    fetchSessionData();
+                } catch (error) {
+                    alert('Error clearing responses');
+                }
+            }
+        }
+
+        // Go back to landing
+        function goBack() {
+            if (updateInterval) {
+                clearInterval(updateInterval);
+            }
+            window.location.href = '/';
+        }
+
+        // Theme toggle
+        function toggleTheme() {
+            document.body.classList.toggle('dark');
+            localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+        }
+
+        // Fullscreen toggle
+        function toggleFullscreen() {
+            const container = document.getElementById('cloudContainer');
+            
+            if (!document.fullscreenElement) {
+                container.requestFullscreen().then(() => {
+                    container.classList.add('fullscreen');
+                    
+                    // Add exit button
+                    const exitBtn = document.createElement('button');
+                    exitBtn.className = 'exit-fullscreen';
+                    exitBtn.textContent = '✕ Exit Fullscreen';
+                    exitBtn.onclick = toggleFullscreen;
+                    container.appendChild(exitBtn);
+                    
+                    // Redraw cloud for new size
+                    setTimeout(fetchSessionData, 100);
+                });
+            } else {
+                document.exitFullscreen().then(() => {
+                    container.classList.remove('fullscreen');
+                    const exitBtn = container.querySelector('.exit-fullscreen');
+                    if (exitBtn) exitBtn.remove();
+                    
+                    // Redraw cloud for new size
+                    setTimeout(fetchSessionData, 100);
+                });
+            }
+        }
+
+        // Blocked words management
+        function getBlockedWords() {
+            const custom = JSON.parse(localStorage.getItem('customBlockedWords') || '[]');
+            return [...defaultProfanityList, ...custom];
+        }
+
+        function addBlockedWord() {
+            const input = document.getElementById('filterWord');
+            const word = input.value.trim().toLowerCase();
+            
+            if (word) {
+                const custom = JSON.parse(localStorage.getItem('customBlockedWords') || '[]');
+                if (!custom.includes(word) && !defaultProfanityList.includes(word)) {
+                    custom.push(word);
+                    localStorage.setItem('customBlockedWords', JSON.stringify(custom));
+                    updateBlockedWordsDisplay();
+                    previousWords.clear();
+                    fetchSessionData();
+                }
+                input.value = '';
+            }
+        }
+
+        function removeBlockedWord(word) {
+            const custom = JSON.parse(localStorage.getItem('customBlockedWords') || '[]');
+            const index = custom.indexOf(word);
+            if (index > -1) {
+                custom.splice(index, 1);
+                localStorage.setItem('customBlockedWords', JSON.stringify(custom));
+                updateBlockedWordsDisplay();
+                previousWords.clear();
+                fetchSessionData();
+            }
+        }
+
+        function updateBlockedWordsDisplay() {
+            const container = document.getElementById('blockedWords');
+            if (!container) return;
+            
+            const custom = JSON.parse(localStorage.getItem('customBlockedWords') || '[]');
+            
+            container.innerHTML = custom.map(word => `
+                <span class="blocked-word">
+                    ${word}
+                    <span class="remove" onclick="removeBlockedWord('${word}')">✕</span>
+                </span>
+            `).join('');
+        }
+
+        // Route to appropriate page
+        if (path === '/' || path === '/teacher') {
+            renderTeacherLanding();
+        } else if (path.startsWith('/teacher/')) {
+            const sessionCode = path.split('/')[2];
+            renderTeacherDashboard(sessionCode);
+        } else if (path === '/join') {
+            renderStudentJoin();
+        } else if (path.startsWith('/submit/')) {
+            const sessionCode = path.split('/')[2];
+            renderStudentSubmit(sessionCode);
+        } else {
+            // Default to teacher landing
+            window.location.href = '/';
+        }
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (updateInterval) {
+                clearInterval(updateInterval);
+            }
+        });
+    </script>
+</body>
+</html>
